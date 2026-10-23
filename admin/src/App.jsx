@@ -31,7 +31,7 @@ const pageConfig = {
 
 
 const App = () => {
-  const url = import.meta.env.VITE_API_URL || "http://localhost:4000";
+  const url = (import.meta.env.VITE_API_URL || "http://localhost:4000").replace(/\/+$/, "");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const location = useLocation();
   const showHero = location.pathname !== "/orders";

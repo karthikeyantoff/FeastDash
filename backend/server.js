@@ -14,28 +14,31 @@ import adminRouter from "./routes/adminRoute.js";
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Dynamic CORS configuration allowing configured and development origins
-const allowedOrigins = [
-    process.env.FRONTEND_URL,
-    process.env.ADMIN_URL,
-    "http://localhost:5173",
-    "http://localhost:5174",
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:5174"
-].filter(Boolean);
+// Universal CORS & Preflight OPTIONS Handler
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin) {
+        res.setHeader("Access-Control-Allow-Origin", origin);
+        res.setHeader("Access-Control-Allow-Credentials", "true");
+    } else {
+        res.setHeader("Access-Control-Allow-Origin", "*");
+    }
+    res.setHeader(
+        "Access-Control-Allow-Methods",
+        "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+    );
+    res.setHeader(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Authorization, token, X-Requested-With, Accept, Origin"
+    );
+    // Instantly terminate preflight requests with 204 No Content
+    if (req.method === "OPTIONS") {
+        return res.status(204).end();
+    }
+    next();
+});
 
-app.use(
-    cors({
-        origin: (origin, callback) => {
-            // Allow requests with no origin (such as mobile apps or curl)
-            if (!origin || allowedOrigins.includes(origin)) {
-                return callback(null, true);
-            }
-            return callback(null, true); // Fallback for local development
-        },
-        credentials: true
-    })
-);
+app.use(cors({ origin: true, credentials: true }));
 
 // Skip JSON body parser for Stripe webhook to preserve raw binary stream
 app.use((req, res, next) => {
