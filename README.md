@@ -1,157 +1,62 @@
-# 🍔 FeastDash — Full-Stack Food Delivery Application
+# 🍔 FeastDash — Full-Stack Food Ordering & Delivery Management Platform
 
-A production-ready food delivery platform built with the **MERN** stack (MongoDB, Express, React, Node.js). Features a customer-facing ordering app, an admin dashboard for restaurant management, and a RESTful API backend with Stripe payments, JWT authentication, and Cloudinary image hosting.
-
----
-
-## 🌐 Live Demo
-
-| App | URL |
-| --- | --- |
-| 🛒 Customer App | <https://food-delivery-app-tan-delta.vercel.app> |
-| 🔧 Admin Dashboard | <https://food-delivery-app-aa22.vercel.app> |
-| ⚙️ Backend API | <https://food-delivery-app-45vo.onrender.com> |
-| 📖 Swagger Docs | <https://food-delivery-app-45vo.onrender.com/api-docs> |
-
-> **Note:** The backend is hosted on Render's free tier — the first request may take ~30 seconds to spin up.
+A high-performance, industry-ready food delivery platform built with the **MERN** stack (MongoDB, Express 5, React 19, Node.js 24). FeastDash features a customer ordering application with live search and order progress tracking, a restaurant admin management dashboard with inventory control and payment visibility, and a secured REST API backend with Stripe checkout, cryptographic webhooks, JWT authentication, and Cloudinary cloud image hosting.
 
 ---
 
 ## 📐 Architecture
 
 ```
-food_delivery/
-├── frontend/       # Customer-facing React SPA (Vite)
-├── admin/          # Admin dashboard React SPA (Vite)
-├── backend/        # Express REST API
-│   ├── config/     # Database connection
-│   ├── controllers/# Route handlers
-│   ├── middlewares/ # Auth (JWT) & admin-auth middleware
-│   ├── models/     # Mongoose schemas (User, Food, Order)
-│   ├── routes/     # API route definitions (with Swagger JSDoc)
-│   └── scripts/    # Migration utilities
+FeastDash/
+├── frontend/               # Customer-facing React 19 SPA (Vite 7)
+│   ├── src/
+│   │   ├── Components/     # Navbar, FoodDisplay (live search), LoginPopup, etc.
+│   │   ├── Context/        # StoreContext (state & cart synchronization)
+│   │   └── Pages/          # Home, Cart, PlaceOrder, Verify, MyOrders
+├── admin/                  # Restaurant Admin React 19 SPA (Vite 7)
+│   ├── src/
+│   │   ├── components/     # Admin Navbar, Sidebar
+│   │   └── pages/          # Add (dish upload), List (inventory), Orders (pipeline)
+├── backend/                # Express 5 REST API
+│   ├── config/             # MongoDB Atlas connection & Cloudinary v2 setup
+│   ├── controllers/        # Order, Food, Cart, User, Admin handlers
+│   ├── middlewares/        # Standard Bearer auth & Admin auth guards
+│   ├── models/             # Schema-first models (User, Food, Order)
+│   ├── routes/             # REST endpoints & OpenAPI / Swagger docs
+│   ├── test/               # Automated integration test suite (node:test)
+│   └── server.js           # Server entrypoint, CORS, webhook stream, health check
 └── README.md
 ```
 
 ---
 
-## ✨ Features
+## ⚡ Engineering Highlights & Security Upgrades
 
-### Customer App (`frontend`)
-
-- 🔑 **User Authentication** — Sign up / login with JWT
-- 🍕 **Browse Menu** — Explore food items by category
-- 🛒 **Cart Management** — Add, remove, and adjust quantities
-- 💳 **Stripe Checkout** — Secure payment processing
-- 📦 **Order Tracking** — View order history and status
-- 📱 **Responsive Design** — Optimized for mobile and desktop
-
-### Admin Dashboard (`admin`)
-
-- 🔐 **Admin Login** — Secret-key–protected authentication
-- ➕ **Add Food Items** — Upload images, set name / price / category / description
-- 📋 **List & Manage Items** — View, edit, or remove food items
-- 📊 **Order Management** — View all orders and update delivery status
-- 🔔 **Toast Notifications** — Real-time feedback via react-toastify
-
-### Backend API (`backend`)
-
-- 🗄️ **MongoDB + Mongoose** — Schema-first data models
-- 🔒 **JWT Authentication** — Middleware-protected routes
-- 💰 **Stripe Integration** — Server-side payment intents and verification
-- ☁️ **Cloudinary Uploads** — Image hosting with Multer in-memory buffering
-- 📖 **Swagger/OpenAPI Docs** — Auto-generated interactive API documentation
-- 🛡️ **CORS Configuration** — Origin-whitelist for frontend & admin URLs
-- ⚙️ **Admin Routes** — Separate admin auth middleware with secret key
+- 🛡️ **Server-Side Price Integrity**: All order totals, item prices, and delivery charges are computed strictly using trusted database records from `foodModel`. Client-tampered prices in HTTP payloads are completely ignored.
+- 💳 **Cryptographic Stripe Webhooks**: Secure `POST /api/order/webhook` endpoint with HMAC SHA-256 signature verification (`stripe.webhooks.constructEvent`). Customer carts are preserved until payments are confirmed.
+- 🔒 **Role-Based Admin Protection**: Endpoints for adding, editing, and deleting menu dishes (`/api/food/add`, `/api/food/:id`) are strictly protected with JWT admin authorization middleware.
+- ☁️ **Cloudinary Media Pipeline**: Custom stream upload buffering directly into `mern_stack_project_storage/FeastDash`, with tracking of `cloudinaryPublicId` for clean cloud asset deletion.
+- 🔍 **Interactive Live Search**: Instant client-side search across dishes, ingredients, and categories on the customer storefront.
+- 📊 **Order Pipeline Stepper**: Real-time visual tracking (`Confirmed` ➔ `Preparing` ➔ `Out for Delivery` ➔ `Delivered`) on customer order history.
+- 💼 **Admin Payment Badging**: Clear **✓ PAID** and **⏳ UNPAID** status badges, order timestamps, and filter tabs on the admin dashboard.
+- 🩺 **Health Check Diagnostics**: `GET /api/health` providing real-time database connection status and server uptime metrics.
+- 🧪 **Automated API Test Suite**: Zero-dependency automated integration test suite (`backend/test/api.test.js`) verifying registration, login, auth guards, catalog retrieval, and price calculation.
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️ Technology Stack
 
-| Layer | Technology |
-| --- | --- |
-| Frontend | React 19, React Router 7, Vite 7, Axios |
-| Admin | React 19, React Router 7, Vite 7, Axios, react-toastify |
-| Backend | Node.js 20+, Express 5, Mongoose 8, JWT, bcrypt |
-| Payments | Stripe |
-| Images | Cloudinary, Multer |
-| Database | MongoDB (Atlas) |
-| API Docs | swagger-jsdoc, swagger-ui-express |
-| Deployment | Vercel (frontend/admin), Render (backend) |
-
----
-
-## 📋 Prerequisites
-
-- **Node.js** 20+ and **npm** 10+
-- **MongoDB** — local instance or [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) cluster
-- **Stripe** account — [dashboard.stripe.com](https://dashboard.stripe.com) (for payments)
-- **Cloudinary** account — [cloudinary.com](https://cloudinary.com) (for image hosting)
-
----
-
-## 🚀 Quickstart
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/MaulikGupta27/Food-Delivery-App.git
-cd Food-Delivery-App
-```
-
-### 2. Create environment files
-
-Copy the provided examples and fill in your credentials:
-
-```bash
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env
-cp admin/.env.example admin/.env
-```
-
-<details>
-<summary>Windows PowerShell</summary>
-
-```powershell
-Copy-Item backend/.env.example backend/.env
-Copy-Item frontend/.env.example frontend/.env
-Copy-Item admin/.env.example admin/.env
-```
-
-</details>
-
-### 3. Install dependencies
-
-```bash
-# From the repo root
-cd backend  && npm install
-cd ../frontend && npm install
-cd ../admin && npm install
-```
-
-### 4. Start the development servers
-
-Open **three** terminals:
-
-```bash
-# Terminal 1 — Backend (http://localhost:4000)
-cd backend && npm run dev
-
-# Terminal 2 — Customer App (http://localhost:5173)
-cd frontend && npm run dev
-
-# Terminal 3 — Admin Dashboard (http://localhost:5174)
-cd admin && npm run dev
-```
-
-### 5. Open in your browser
-
-| App | URL |
-| --- | --- |
-| Customer App | http://localhost:5173 |
-| Admin Dashboard | http://localhost:5174 |
-| Backend API | http://localhost:4000 |
-| Swagger Docs | http://localhost:4000/api-docs |
+| Layer | Technologies |
+| :--- | :--- |
+| **Customer Frontend** | React 19, React Router 7, Vite 7, Axios, CSS Modules |
+| **Admin Frontend** | React 19, React Router 7, Vite 7, Axios, react-toastify |
+| **Backend API** | Node.js 24+, Express 5, Mongoose 8, JWT, bcryptjs |
+| **Database** | MongoDB Atlas Cloud Cluster |
+| **Payments** | Stripe Checkout (Test & Live modes) & Webhooks |
+| **Media Hosting** | Cloudinary v2 SDK with in-memory streaming |
+| **API Documentation**| Swagger UI (`swagger-ui-express`, `swagger-jsdoc`) |
+| **Testing** | Node.js Test Runner (`node:test`, `node:assert`) |
+| **Deployment** | Vercel (Frontends) & Render / Railway (Backend) |
 
 ---
 
@@ -159,43 +64,126 @@ cd admin && npm run dev
 
 ### Backend (`backend/.env`)
 
-| Variable | Description | Default |
-| --- | --- | --- |
-| `PORT` | Server port | `4000` |
-| `MONGODB_URI` | MongoDB connection string | `mongodb://127.0.0.1:27017/food_delivery` |
-| `JWT_SECRET` | Secret key for signing JWTs | — |
-| `ADMIN_SECRET_KEY` | Secret key for admin authentication | — |
-| `ADMIN_PASSWORD` | Admin login password | — |
-| `STRIPE_SECRET_KEY` | Stripe API secret key | — |
-| `FRONTEND_URL` | Allowed CORS origin for customer app | `http://localhost:5173` |
-| `ADMIN_URL` | Allowed CORS origin for admin app | `http://localhost:5174` |
-| `MAX_UPLOAD_SIZE_BYTES` | Maximum image upload size | `2097152` (2 MB) |
-| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name | — |
-| `CLOUDINARY_API_KEY` | Cloudinary API key | — |
-| `CLOUDINARY_API_SECRET` | Cloudinary API secret | — |
+```env
+PORT=4000
+MONGODB_URI=mongodb+srv://<user>:<password>@cluster0.mongodb.net/feastdash?retryWrites=true&w=majority
+JWT_SECRET=your_long_random_jwt_secret
+ADMIN_SECRET_KEY=your_long_random_admin_secret
+ADMIN_PASSWORD=your_admin_login_password
+STRIPE_SECRET_KEY=sk_test_your_stripe_secret
+STRIPE_WEBHOOK_SECRET=whsec_your_stripe_webhook_secret
+FRONTEND_URL=http://localhost:5173
+ADMIN_URL=http://localhost:5174
+MAX_UPLOAD_SIZE_BYTES=2097152
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+CLOUDINARY_FOLDER=mern_stack_project_storage/FeastDash
+```
 
-### Frontend & Admin (`.env`)
+### Customer Frontend (`frontend/.env`) & Admin (`admin/.env`)
 
-| Variable | Description |
-| --- | --- |
-| `VITE_API_URL` | Backend API base URL (e.g. `http://localhost:4000`) |
+```env
+VITE_API_URL=http://localhost:4000
+```
 
 ---
 
-## 📖 API Documentation (Swagger)
+## 🧪 Running Automated Tests
 
-The backend auto-generates interactive API docs via **Swagger UI**. Once the backend is running, visit:
+Run the backend integration test suite:
 
+```bash
+cd backend
+npm test
 ```
-http://localhost:4000/api-docs
-```
 
-All available endpoints, request/response schemas, and authentication requirements are documented there. The Swagger UI is the **single source of truth** for the API surface.
+Expected output:
+```
+▶ FeastDash API Automated Verification Suite
+  ✔ Health check endpoint returns status 200 and connected DB
+  ✔ User registration succeeds and returns valid JWT token
+  ✔ User login succeeds with correct credentials
+  ✔ Authenticated user profile retrieval works via Bearer header
+  ✔ Unauthenticated menu addition is strictly rejected with HTTP 401
+  ✔ Server-side price verification and order creation
+  ✔ Catalog listing returns dishes array
+✔ FeastDash API Automated Verification Suite (7 passed, 0 failed)
+```
 
 ---
 
-## ☁️ Image Uploads (Cloudinary)
+## 🚀 Local Development Setup
 
-Food images are uploaded to **Cloudinary** under the `food_delivery` folder. The backend uses **Multer** with in-memory storage to buffer uploads before streaming them to Cloudinary. Image URLs returned by the API are full HTTPS Cloudinary URLs.
+### 1. Clone & Configure
 
+```bash
+git clone https://github.com/karthikeyantoff/FeastDash.git
+cd FeastDash
+```
 
+### 2. Install Dependencies
+
+```bash
+cd backend && npm install
+cd ../frontend && npm install
+cd ../admin && npm install
+```
+
+### 3. Start Development Servers
+
+Open three terminals:
+
+```bash
+# Terminal 1 - Backend API (http://localhost:4000)
+cd backend && npm run dev
+
+# Terminal 2 - Customer App (http://localhost:5173)
+cd frontend && npm run dev
+
+# Terminal 3 - Admin Dashboard (http://localhost:5174)
+cd admin && npm run dev
+```
+
+---
+
+## 🌐 Production Deployment Guide
+
+### Step 1: Deploy Backend (Render / Railway)
+1. Create a new **Web Service** on [Render](https://render.com) connecting your `FeastDash` repository.
+2. Set **Root Directory**: `backend`
+3. Set **Build Command**: `npm install`
+4. Set **Start Command**: `node server.js`
+5. Add all Environment Variables from `backend/.env`.
+6. Copy your production API URL (e.g., `https://feastdash-api.onrender.com`).
+
+### Step 2: Deploy Customer Frontend (Vercel)
+1. Import your `FeastDash` repository into [Vercel](https://vercel.com).
+2. Set **Root Directory**: `frontend`
+3. Set **Framework Preset**: `Vite`
+4. Add Environment Variable:
+   - `VITE_API_URL`: `https://feastdash-api.onrender.com`
+5. Deploy and copy your customer URL (e.g., `https://feastdash.vercel.app`).
+
+### Step 3: Deploy Admin Dashboard (Vercel)
+1. Import your `FeastDash` repository as a second project in [Vercel](https://vercel.com).
+2. Set **Root Directory**: `admin`
+3. Set **Framework Preset**: `Vite`
+4. Add Environment Variable:
+   - `VITE_API_URL`: `https://feastdash-api.onrender.com`
+5. Deploy and copy your admin URL (e.g., `https://feastdash-admin.vercel.app`).
+
+### Step 4: Finalize Production Backend CORS & Stripe Webhook
+1. Update `FRONTEND_URL` and `ADMIN_URL` on Render with your live Vercel domains.
+2. In your [Stripe Dashboard](https://dashboard.stripe.com/test/webhooks), create a webhook endpoint pointing to:
+   `https://feastdash-api.onrender.com/api/order/webhook`
+   Listening for: `checkout.session.completed` and `payment_intent.payment_failed`.
+3. Add the generated `whsec_...` signing secret to your backend `STRIPE_WEBHOOK_SECRET`.
+
+---
+
+## 👤 Author & Attribution
+
+- **Developer:** [Karthikeyan](https://github.com/karthikeyantoff) (`karthikeyantoff`)
+- **Original Starter Codebase Attribution:** Based on an open-source project by Maulik Gupta, customized, security-hardened, and extended into FeastDash.
+- **License:** ISC

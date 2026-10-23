@@ -6,6 +6,22 @@ const cartRouter = express.Router();
 
 /**
  * @openapi
+ * /api/cart:
+ *   get:
+ *     summary: Get current user's cart
+ *     tags:
+ *       - Cart
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: User cart
+ */
+cartRouter.get("/", authMiddleware, getCart);
+cartRouter.post("/get", authMiddleware, getCart); // backward compatibility
+
+/**
+ * @openapi
  * /api/cart/add:
  *   post:
  *     summary: Add item to cart
@@ -19,10 +35,10 @@ const cartRouter = express.Router();
  *           schema:
  *             type: object
  *             properties:
+ *               itemId:
+ *                 type: string
  *               foodId:
  *                 type: string
- *               quantity:
- *                 type: integer
  *     responses:
  *       '200':
  *         description: Item added to cart
@@ -44,6 +60,8 @@ cartRouter.post("/add", authMiddleware, addToCart);
  *           schema:
  *             type: object
  *             properties:
+ *               itemId:
+ *                 type: string
  *               foodId:
  *                 type: string
  *     responses:
@@ -51,20 +69,5 @@ cartRouter.post("/add", authMiddleware, addToCart);
  *         description: Item removed from cart
  */
 cartRouter.post("/remove", authMiddleware, removeFromCart);
-
-/**
- * @openapi
- * /api/cart/get:
- *   post:
- *     summary: Get current user's cart
- *     tags:
- *       - Cart
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       '200':
- *         description: User cart
- */
-cartRouter.post("/get", authMiddleware, getCart);
 
 export default cartRouter;

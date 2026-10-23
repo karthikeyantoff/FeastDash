@@ -1,6 +1,6 @@
-import express from 'express';
-import { loginUser, registerUser } from '../controllers/userController.js';
-
+import express from "express";
+import { loginUser, registerUser, getUserProfile } from "../controllers/userController.js";
+import { authMiddleware } from "../middlewares/auth.js";
 
 const userRouter = express.Router();
 
@@ -16,6 +16,10 @@ const userRouter = express.Router();
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - password
  *             properties:
  *               name:
  *                 type: string
@@ -24,10 +28,10 @@ const userRouter = express.Router();
  *               password:
  *                 type: string
  *     responses:
- *       '200':
- *         description: User registered
+ *       '201':
+ *         description: User registered successfully
  */
-userRouter.post('/register', registerUser);
+userRouter.post("/register", registerUser);
 
 /**
  * @openapi
@@ -41,6 +45,9 @@ userRouter.post('/register', registerUser);
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - email
+ *               - password
  *             properties:
  *               email:
  *                 type: string
@@ -50,6 +57,21 @@ userRouter.post('/register', registerUser);
  *       '200':
  *         description: User logged in
  */
-userRouter.post('/login', loginUser);
+userRouter.post("/login", loginUser);
+
+/**
+ * @openapi
+ * /api/user/profile:
+ *   get:
+ *     summary: Get current authenticated user profile
+ *     tags:
+ *       - User
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: User profile details
+ */
+userRouter.get("/profile", authMiddleware, getUserProfile);
 
 export default userRouter;

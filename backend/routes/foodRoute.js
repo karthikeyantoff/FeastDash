@@ -1,35 +1,10 @@
 import express from "express";
-import { addFood, listFood, removeFood } from "../controllers/foodController.js";
-import multer from "multer";    // for image storage
+import { addFood, updateFood, listFood, getFoodById, removeFood } from "../controllers/foodController.js";
+import { adminAuthMiddleware } from "../middlewares/adminAuth.js";
+import multer from "multer";
 
 const foodRouter = express.Router();
 
-/**
- * @openapi
- * /api/food/add:
- *   post:
- *     summary: Add a new food item
- *     tags:
- *       - Food
- *     requestBody:
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               price:
- *                 type: number
- *               image:
- *                 type: string
- *                 format: binary
- *     responses:
- *       '200':
- *         description: Food added
- */
-
-// use memory storage — file buffer goes to Cloudinary, not local disk
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: Number(process.env.MAX_UPLOAD_SIZE_BYTES) || 2 * 1024 * 1024 },
@@ -41,7 +16,43 @@ const upload = multer({
     }
 });
 
-foodRouter.post("/add", upload.single("image"), addFood);
+/**
+ * @openapi
+ * /api/food/add:
+ *   post:
+ *     summary: Add a new food item (Admin)
+ *     tags:
+ *       - Food
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - description
+ *               - price
+ *               - category
+ *               - image
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               price:
+ *                 type: number
+ *               category:
+ *                 type: string
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       '201':
+ *         description: Food added successfully
+ */
+foodRouter.post("/add", adminAuthMiddleware, upload.single("image"), addFood);
 
 /**
  * @openapi
@@ -58,23 +69,71 @@ foodRouter.get("/list", listFood);
 
 /**
  * @openapi
- * /api/food/remove:
- *   post:
- *     summary: Remove a food item
+ * /api/food/{id}:
+ *   get:
+ *     summary: Get single food item
  *     tags:
  *       - Food
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Food item details
+ */
+foodRouter.get("/:id", getFoodById);
+
+/**
+ * @openapi
+ * /api/food/{id}:
+ *   put:
+ *     summary: Update food item (Admin)
+ *     tags:
+ *       - Food
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
  *     requestBody:
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
- *             properties:
- *               id:
- *                 type: string
+ *     responses:
+ *       '200':
+ *         description: Food updated successfully
+ */
+foodRouter.put("/:id", adminAuthMiddleware, upload.single("image"), updateFood);
+
+/**
+ * @openapi
+ * /api/food/{id}:
+ *   delete:
+ *     summary: Remove a food item (Admin)
+ *     tags:
+ *       - Food
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       '200':
  *         description: Food removed
  */
-foodRouter.post("/remove", removeFood);
+foodRouter.delete("/:id", adminAuthMiddleware, removeFood);
+
+// Backward-compatible POST endpoint for existing admin frontend
+foodRouter.post("/remove", adminAuthMiddleware, removeFood);
 
 export default foodRouter;

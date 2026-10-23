@@ -1,66 +1,84 @@
 import userModel from "../models/userModel.js";
 
-// add items to user cart
+// Add item to user cart
 export const addToCart = async (req, res) => {
     try {
-        if (!req.body.itemId || typeof req.body.itemId !== "string") {
-            return res.status(400).json({ success: false, message: "Invalid itemId" });
+        const userId = req.userId || (req.body && req.body.userId);
+        const itemId = req.body.itemId || req.body.foodId;
+
+        if (!itemId || typeof itemId !== "string") {
+            return res.status(400).json({ success: false, message: "Valid itemId/foodId is required" });
         }
 
-        const userData = await userModel.findById(req.body.userId);
+        const userData = await userModel.findById(userId);
         if (!userData) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
-        const cartData = userData.cartData;
-        if(!cartData[req.body.itemId]) {
-            cartData[req.body.itemId] = 1;
+        const cartData = { ...(userData.cartData || {}) };
+        if (!cartData[itemId]) {
+            cartData[itemId] = 1;
         } else {
-            cartData[req.body.itemId] += 1;
+            cartData[itemId] += 1;
         }
-        await userModel.findByIdAndUpdate(req.body.userId, { cartData });
+
+        await userModel.findByIdAndUpdate(userId, { cartData });
         return res.status(200).json({ success: true, message: "Item added to cart", cartData });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Server error" });
+        console.error("addToCart error:", error);
+        return res.status(500).json({ success: false, message: "Server error updating cart" });
     }
-}
+};
 
-
-// remove items from user cart
+// Remove item from user cart
 export const removeFromCart = async (req, res) => {
     try {
-        if (!req.body.itemId || typeof req.body.itemId !== "string") {
-            return res.status(400).json({ success: false, message: "Invalid itemId" });
+        const userId = req.userId || (req.body && req.body.userId);
+        const itemId = req.body.itemId || req.body.foodId;
+
+        if (!itemId || typeof itemId !== "string") {
+            return res.status(400).json({ success: false, message: "Valid itemId/foodId is required" });
         }
 
-        const userData = await userModel.findById(req.body.userId);
+        const userData = await userModel.findById(userId);
         if (!userData) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
-        const cartData = userData.cartData;
-        if(cartData[req.body.itemId]>0) {
-            cartData[req.body.itemId] -= 1;
+        const cartData = { ...(userData.cartData || {}) };
+        if (cartData[itemId] > 1) {
+            cartData[itemId] -= 1;
+        } else {
+            // Delete key completely when quantity drops to 0
+            delete cartData[itemId];
         }
-        await userModel.findByIdAndUpdate(req.body.userId, { cartData });
+
+        await userModel.findByIdAndUpdate(userId, { cartData });
         return res.status(200).json({ success: true, message: "Item removed from cart", cartData });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Server error" });
+        console.error("removeFromCart error:", error);
+        return res.status(500).json({ success: false, message: "Server error updating cart" });
     }
-}
+};
 
-
-// fetch user cart data
+// Fetch user cart data
 export const getCart = async (req, res) => {
     try {
-        const userData = await userModel.findById(req.body.userId);
+        const userId = req.userId || (req.body && req.body.userId);
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "User not authenticated" });
+        }
+
+        const userData = await userModel.findById(userId);
         if (!userData) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
 
-        const cartData = userData.cartData;
+        const cartData = userData.cartData || {};
         return res.status(200).json({ success: true, cartData });
     } catch (error) {
-        return res.status(500).json({ success: false, message: "Server error" });
-    } 
-}
+        console.error("getCart error:", error);
+        return res.status(500).json({ success: false, message: "Server error fetching cart" });
+    }
+};

@@ -1,57 +1,127 @@
-import express from 'express';
-import cors from 'cors';
-import swaggerUi from 'swagger-ui-express';
-import swaggerJsdoc from 'swagger-jsdoc';
-import { connectDB } from './config/db.js';
-import foodRouter from './routes/foodRoute.js';
-import userRouter from './routes/userRoute.js';
-import cartRouter from './routes/cartRoute.js';
-import "dotenv/config"
-import orderRouter from './routes/orderRoute.js';
-import adminRouter from './routes/adminRoute.js';
+import "dotenv/config";
+import express from "express";
+import cors from "cors";
+import mongoose from "mongoose";
+import swaggerUi from "swagger-ui-express";
+import swaggerJsdoc from "swagger-jsdoc";
+import { connectDB } from "./config/db.js";
+import foodRouter from "./routes/foodRoute.js";
+import userRouter from "./routes/userRoute.js";
+import cartRouter from "./routes/cartRoute.js";
+import orderRouter from "./routes/orderRoute.js";
+import adminRouter from "./routes/adminRoute.js";
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.use(express.json());
+// Dynamic CORS configuration allowing configured and development origins
+const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    process.env.ADMIN_URL,
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174"
+].filter(Boolean);
 
-app.use(cors({
-    origin: [process.env.FRONTEND_URL, process.env.ADMIN_URL].filter(Boolean),
-    credentials: true,
-}));
+app.use(
+    cors({
+        origin: (origin, callback) => {
+            // Allow requests with no origin (such as mobile apps or curl)
+            if (!origin || allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
+            return callback(null, true); // Fallback for local development
+        },
+        credentials: true
+    })
+);
 
-connectDB();
+// Skip JSON body parser for Stripe webhook to preserve raw binary stream
+app.use((req, res, next) => {
+    if (req.originalUrl === "/api/order/webhook") {
+        next();
+    } else {
+        express.json()(req, res, next);
+    }
+});
 
+// Swagger/OpenAPI Configuration with JWT Security Scheme
 const swaggerOptions = {
     definition: {
-        openapi: '3.0.0',
+        openapi: "3.0.0",
         info: {
-            title: 'Food Delivery API',
-            version: '1.0.0',
-            description: 'API documentation for Food Delivery backend'
+            title: "FeastDash API",
+            version: "2.0.0",
+            description: "Industry-Level Food Delivery Platform REST API"
         },
         servers: [
             { url: `http://localhost:${PORT}` }
-        ]
+        ],
+        components: {
+            securitySchemes: {
+                bearerAuth: {
+                    type: "http",
+                    scheme: "bearer",
+                    bearerFormat: "JWT"
+                }
+            }
+        }
     },
-    apis: ['./routes/*.js']
+    apis: ["./routes/*.js", "./backend/routes/*.js"]
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-app.use("/api/food", foodRouter);
+// Static files for backward compatibility
 app.use("/images", express.static("uploads"));
+
+// Health Check Endpoint
+app.get("/api/health", (req, res) => {
+    const isDbConnected = [1, 2].includes(mongoose.connection.readyState);
+    res.status(isDbConnected ? 200 : 503).json({
+        status: isDbConnected ? "ok" : "degraded",
+        service: "FeastDash API",
+        timestamp: new Date().toISOString(),
+        database: mongoose.connection.readyState === 1 ? "connected" : (mongoose.connection.readyState === 2 ? "connecting" : "disconnected"),
+        uptimeSeconds: Math.floor(process.uptime())
+    });
+});
+
+// API Routes
+app.use("/api/food", foodRouter);
 app.use("/api/user", userRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
 app.use("/api/admin", adminRouter);
 
-app.get('/', (req, res) => {
-    res.send('API is running');
+app.get("/", (req, res) => {
+    res.send("FeastDash API is running");
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+// Centralized Error Handling Middleware
+app.use((err, req, res, next) => {
+    console.error("Unhandled Error:", err);
+    res.status(err.status || 500).json({
+        success: false,
+        message: err.message || "Internal Server Error"
+    });
 });
 
+// Start Server after connecting to MongoDB
+export const startServer = async () => {
+    await connectDB();
+    const server = app.listen(PORT, () => {
+        console.log(`FeastDash server is running on port ${PORT}`);
+        console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
+        console.log(`Health check available at http://localhost:${PORT}/api/health`);
+    });
+    return server;
+};
+
+if (process.env.NODE_ENV !== "test") {
+    startServer();
+}
+
+export default app;
