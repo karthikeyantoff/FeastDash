@@ -87,7 +87,7 @@ const dishes = [
     description: "Classic hot milk dumplings paired with vanilla bean ice cream",
     price: 120,
     category: "Desserts",
-    image: "https://images.unsplash.com/photo-1589119908995-c6837fa14d48?w=500&auto=format&fit=crop&q=80",
+    image: "https://res.cloudinary.com/cblqllb4/image/upload/v1792769143/mern_stack_project_storage/FeastDash/nrfspeumwn5gclqwnbs5.png",
     isAvailable: true
   },
 
@@ -133,7 +133,7 @@ const dishes = [
     description: "Penne pasta tossed in rich parmesan garlic white cream sauce",
     price: 210,
     category: "Pasta",
-    image: "https://images.unsplash.com/photo-1621996346565-e3d5d6281093?w=500&auto=format&fit=crop&q=80",
+    image: "https://res.cloudinary.com/cblqllb4/image/upload/v1792769147/mern_stack_project_storage/FeastDash/wdm0gr8zhsc5p5u2hhok.png",
     isAvailable: true
   },
   {
