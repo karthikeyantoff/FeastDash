@@ -24,6 +24,9 @@ A high-performance, industry-ready food delivery platform built with the **MERN*
 ### Restaurant Admin Management Dashboard
 ![FeastDash Admin Dashboard](docs/screenshots/admin_dashboard.png)
 
+### Live Backend REST API Status
+![FeastDash Backend API Running](docs/screenshots/backend_api.png)
+
 ### Swagger / OpenAPI 3.0 Interactive Documentation
 ![FeastDash Interactive API Docs](docs/screenshots/api_docs.png)
 
