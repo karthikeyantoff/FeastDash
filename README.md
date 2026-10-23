@@ -1,6 +1,18 @@
 # 🍔 FeastDash — Full-Stack Food Ordering & Delivery Management Platform
 
-A high-performance, industry-ready food delivery platform built with the **MERN** stack (MongoDB, Express 5, React 19, Node.js 24). FeastDash features a customer ordering application with live search and order progress tracking, a restaurant admin management dashboard with inventory control and payment visibility, and a secured REST API backend with Stripe checkout, cryptographic webhooks, JWT authentication, and Cloudinary cloud image hosting.
+[![Live Backend](https://img.shields.io/badge/Vercel-Backend_API-black?logo=vercel)](https://feastdash-backend.vercel.app/api/health)
+[![Live Storefront](https://img.shields.io/badge/Vercel-Customer_App-black?logo=vercel)](https://feastdash-app.vercel.app)
+[![Live Admin](https://img.shields.io/badge/Vercel-Admin_Dashboard-black?logo=vercel)](https://feast-dash-livid.vercel.app)
+[![API Docs](https://img.shields.io/badge/Swagger-API_Docs-85EA2D?logo=swagger&logoColor=black)](https://feastdash-backend.vercel.app/api-docs)
+
+### 🚀 Live Production Links
+- 🌐 **Customer Storefront:** [https://feastdash-app.vercel.app](https://feastdash-app.vercel.app)
+- 🛠️ **Admin Management Dashboard:** [https://feast-dash-livid.vercel.app](https://feast-dash-livid.vercel.app) *(Default Admin Password: `FeastDashAdmin2026!`)*
+- 🔌 **Backend REST API:** [https://feastdash-backend.vercel.app](https://feastdash-backend.vercel.app)
+- 📖 **Interactive Swagger / OpenAPI Docs:** [https://feastdash-backend.vercel.app/api-docs](https://feastdash-backend.vercel.app/api-docs)
+- 🩺 **Real-time Health Check:** [https://feastdash-backend.vercel.app/api/health](https://feastdash-backend.vercel.app/api/health)
+
+A high-performance, industry-ready food delivery platform built with the **MERN** stack (MongoDB Atlas, Express 5, React 19, Node.js 24). FeastDash features a customer ordering application with live search and order progress tracking, a restaurant admin management dashboard with inventory control and payment visibility, and a secured REST API backend with Stripe checkout, cryptographic webhooks, JWT authentication, and Cloudinary cloud image hosting.
 
 ---
 
