@@ -4,7 +4,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import swaggerUi from "swagger-ui-express";
 import swaggerJsdoc from "swagger-jsdoc";
-import { connectDB } from "./config/db.js";
+import { connectDB, lastDbError } from "./config/db.js";
 import foodRouter from "./routes/foodRoute.js";
 import userRouter from "./routes/userRoute.js";
 import cartRouter from "./routes/cartRoute.js";
@@ -77,18 +77,6 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Static files for backward compatibility
 app.use("/images", express.static("uploads"));
 
-// Health Check Endpoint
-app.get("/api/health", (req, res) => {
-    const isDbConnected = [1, 2].includes(mongoose.connection.readyState);
-    res.status(isDbConnected ? 200 : 503).json({
-        status: isDbConnected ? "ok" : "degraded",
-        service: "FeastDash API",
-        timestamp: new Date().toISOString(),
-        database: mongoose.connection.readyState === 1 ? "connected" : (mongoose.connection.readyState === 2 ? "connecting" : "disconnected"),
-        uptimeSeconds: Math.floor(process.uptime())
-    });
-});
-
 // Ensure database is connected for serverless invocations (e.g. Vercel)
 app.use(async (req, res, next) => {
     try {
@@ -98,8 +86,22 @@ app.use(async (req, res, next) => {
         next();
     } catch (dbErr) {
         console.error("Serverless DB Connection Error:", dbErr);
-        res.status(500).json({ success: false, message: "Database connection failed" });
+        next();
     }
+});
+
+// Health Check Endpoint
+app.get("/api/health", (req, res) => {
+    const isDbConnected = mongoose.connection.readyState === 1;
+    res.status(isDbConnected ? 200 : 503).json({
+        status: isDbConnected ? "ok" : "degraded",
+        service: "FeastDash API",
+        timestamp: new Date().toISOString(),
+        database: isDbConnected ? "connected" : (mongoose.connection.readyState === 2 ? "connecting" : "disconnected"),
+        hasMongoUri: Boolean(process.env.MONGODB_URI),
+        dbError: lastDbError,
+        uptimeSeconds: Math.floor(process.uptime())
+    });
 });
 
 // API Routes
