@@ -9,11 +9,18 @@ const Login = ({ url, onLoginSuccess }) => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    const cleanPassword = password.trim();
+
+    if (!cleanPassword) {
+      toast.error("Please enter the admin password");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const response = await axios.post(`${url}/api/admin/login`, {
-        password
+        password: cleanPassword
       });
 
       if (response.data.success) {
@@ -24,7 +31,7 @@ const Login = ({ url, onLoginSuccess }) => {
         toast.error(response.data.message || "Login failed");
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Invalid password");
+      toast.error(error.response?.data?.message || error.message || "Invalid password");
     } finally {
       setLoading(false);
     }

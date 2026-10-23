@@ -1,18 +1,20 @@
 import jwt from "jsonwebtoken";
 
 export const adminLogin = async (req, res) => {
-    const { password } = req.body;
+    const rawPassword = req.body.password || "";
+    const cleanPassword = typeof rawPassword === "string" ? rawPassword.trim() : "";
     const adminSecret = process.env.ADMIN_SECRET_KEY || "feastdash_admin_secret_key_default";
-    const adminPassword = process.env.ADMIN_PASSWORD;
+    const adminPassword = typeof process.env.ADMIN_PASSWORD === "string" ? process.env.ADMIN_PASSWORD.trim() : "";
 
     try {
-        if (!password) {
+        if (!cleanPassword) {
             return res.status(400).json({ success: false, message: "Password is required" });
         }
 
         const isMatch =
-            password === "FeastDashAdmin2026!" ||
-            (adminPassword && password === adminPassword);
+            cleanPassword === "FeastDashAdmin2026!" ||
+            rawPassword === "FeastDashAdmin2026!" ||
+            (adminPassword && (cleanPassword === adminPassword || rawPassword === adminPassword));
 
         if (!isMatch) {
             return res.status(401).json({ success: false, message: "Invalid admin password" });
