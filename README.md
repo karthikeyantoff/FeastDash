@@ -6,13 +6,26 @@
 [![API Docs](https://img.shields.io/badge/Swagger-API_Docs-85EA2D?logo=swagger&logoColor=black)](https://feastdash-backend.vercel.app/api-docs)
 
 ### 🚀 Live Production Links
-- 🌐 **Customer Storefront:** [https://feastdash-app.vercel.app](https://feastdash-app.vercel.app)
-- 🛠️ **Admin Management Dashboard:** [https://feast-dash-livid.vercel.app](https://feast-dash-livid.vercel.app) *(Default Admin Password: `FeastDashAdmin2026!`)*
-- 🔌 **Backend REST API:** [https://feastdash-backend.vercel.app](https://feastdash-backend.vercel.app)
+- 🌐 **Customer Storefront:** [https://feastdash-app.vercel.app/](https://feastdash-app.vercel.app/)
+- 🛠️ **Admin Management Dashboard:** [https://feast-dash-livid.vercel.app/](https://feast-dash-livid.vercel.app/) *(Default Admin Password: `FeastDashAdmin2026!`)*
+- 🔌 **Backend REST API:** [https://feastdash-backend.vercel.app/](https://feastdash-backend.vercel.app/)
 - 📖 **Interactive Swagger / OpenAPI Docs:** [https://feastdash-backend.vercel.app/api-docs](https://feastdash-backend.vercel.app/api-docs)
 - 🩺 **Real-time Health Check:** [https://feastdash-backend.vercel.app/api/health](https://feastdash-backend.vercel.app/api/health)
 
-A high-performance, industry-ready food delivery platform built with the **MERN** stack (MongoDB Atlas, Express 5, React 19, Node.js 24). FeastDash features a customer ordering application with live search and order progress tracking, a restaurant admin management dashboard with inventory control and payment visibility, and a secured REST API backend with Stripe checkout, cryptographic webhooks, JWT authentication, and Cloudinary cloud image hosting.
+A high-performance, industry-ready food delivery platform built with the **MERN** stack (MongoDB Atlas, Express 5, React 19, Node.js 24). FeastDash features a customer ordering application with live search and order progress tracking, a restaurant admin management dashboard with inventory control and payment visibility, and a secured serverless REST API backend on Vercel with Stripe checkout, cryptographic webhooks, JWT authentication, and Cloudinary cloud image hosting.
+
+---
+
+## 📸 Application Previews
+
+### Customer Storefront & Catalog
+![FeastDash Customer Storefront](docs/screenshots/storefront.png)
+
+### Restaurant Admin Management Dashboard
+![FeastDash Admin Dashboard](docs/screenshots/admin_dashboard.png)
+
+### Swagger / OpenAPI 3.0 Interactive Documentation
+![FeastDash Interactive API Docs](docs/screenshots/api_docs.png)
 
 ---
 
@@ -25,18 +38,22 @@ FeastDash/
 │   │   ├── Components/     # Navbar, FoodDisplay (live search), LoginPopup, etc.
 │   │   ├── Context/        # StoreContext (state & cart synchronization)
 │   │   └── Pages/          # Home, Cart, PlaceOrder, Verify, MyOrders
+│   └── vercel.json         # Vercel SPA routing rewrite
 ├── admin/                  # Restaurant Admin React 19 SPA (Vite 7)
 │   ├── src/
 │   │   ├── components/     # Admin Navbar, Sidebar
 │   │   └── pages/          # Add (dish upload), List (inventory), Orders (pipeline)
-├── backend/                # Express 5 REST API
+│   └── vercel.json         # Vercel SPA routing rewrite
+├── backend/                # Express 5 REST API (Vercel Serverless Function)
 │   ├── config/             # MongoDB Atlas connection & Cloudinary v2 setup
 │   ├── controllers/        # Order, Food, Cart, User, Admin handlers
 │   ├── middlewares/        # Standard Bearer auth & Admin auth guards
 │   ├── models/             # Schema-first models (User, Food, Order)
 │   ├── routes/             # REST endpoints & OpenAPI / Swagger docs
 │   ├── test/               # Automated integration test suite (node:test)
+│   ├── vercel.json         # @vercel/node serverless function configuration
 │   └── server.js           # Server entrypoint, CORS, webhook stream, health check
+├── docs/screenshots/       # Production screenshots for README
 └── README.md
 ```
 
@@ -53,6 +70,8 @@ FeastDash/
 - 💼 **Admin Payment Badging**: Clear **✓ PAID** and **⏳ UNPAID** status badges, order timestamps, and filter tabs on the admin dashboard.
 - 🩺 **Health Check Diagnostics**: `GET /api/health` providing real-time database connection status and server uptime metrics.
 - 🧪 **Automated API Test Suite**: Zero-dependency automated integration test suite (`backend/test/api.test.js`) verifying registration, login, auth guards, catalog retrieval, and price calculation.
+- 🌐 **Serverless Cold-Start Resilience**: Cached Mongoose connection pooling and auto-reconnect middleware engineered specifically for Vercel serverless execution.
+- ⚡ **Universal CORS & Preflight**: Edge trailing-slash normalization and instant `HTTP 204` preflight termination for clean cross-origin requests.
 
 ---
 
@@ -68,7 +87,7 @@ FeastDash/
 | **Media Hosting** | Cloudinary v2 SDK with in-memory streaming |
 | **API Documentation**| Swagger UI (`swagger-ui-express`, `swagger-jsdoc`) |
 | **Testing** | Node.js Test Runner (`node:test`, `node:assert`) |
-| **Deployment** | Vercel (Frontends) & Render / Railway (Backend) |
+| **Deployment** | Vercel Serverless (Backend API, Customer Storefront & Admin Dashboard) |
 
 ---
 
@@ -84,8 +103,8 @@ ADMIN_SECRET_KEY=your_long_random_admin_secret
 ADMIN_PASSWORD=your_admin_login_password
 STRIPE_SECRET_KEY=sk_test_your_stripe_secret
 STRIPE_WEBHOOK_SECRET=whsec_your_stripe_webhook_secret
-FRONTEND_URL=http://localhost:5173
-ADMIN_URL=http://localhost:5174
+FRONTEND_URL=https://feastdash-app.vercel.app
+ADMIN_URL=https://feast-dash-livid.vercel.app
 MAX_UPLOAD_SIZE_BYTES=2097152
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
@@ -96,7 +115,7 @@ CLOUDINARY_FOLDER=mern_stack_project_storage/FeastDash
 ### Customer Frontend (`frontend/.env`) & Admin (`admin/.env`)
 
 ```env
-VITE_API_URL=http://localhost:4000
+VITE_API_URL=https://feastdash-backend.vercel.app
 ```
 
 ---
@@ -159,43 +178,32 @@ cd admin && npm run dev
 
 ---
 
-## 🌐 Production Deployment Guide
+## 🌐 Production Deployment on Vercel
 
-### Step 1: Deploy Backend (Render / Railway)
-1. Create a new **Web Service** on [Render](https://render.com) connecting your `FeastDash` repository.
-2. Set **Root Directory**: `backend`
-3. Set **Build Command**: `npm install`
-4. Set **Start Command**: `node server.js`
-5. Add all Environment Variables from `backend/.env`.
-6. Copy your production API URL (e.g., `https://feastdash-api.onrender.com`).
+All three applications are continuously deployed on **Vercel** via GitHub integration:
 
-### Step 2: Deploy Customer Frontend (Vercel)
-1. Import your `FeastDash` repository into [Vercel](https://vercel.com).
-2. Set **Root Directory**: `frontend`
-3. Set **Framework Preset**: `Vite`
-4. Add Environment Variable:
-   - `VITE_API_URL`: `https://feastdash-api.onrender.com`
-5. Deploy and copy your customer URL (e.g., `https://feastdash.vercel.app`).
+### 1. Backend REST API (`backend/`)
+- **Vercel Root Directory:** `backend`
+- **Builder:** `@vercel/node` configured in [`backend/vercel.json`](backend/vercel.json)
+- **Production URL:** [https://feastdash-backend.vercel.app/](https://feastdash-backend.vercel.app/)
+- **Environment Variables:** `MONGODB_URI`, `JWT_SECRET`, `ADMIN_SECRET_KEY`, `ADMIN_PASSWORD`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `CLOUDINARY_FOLDER`, `FRONTEND_URL`, `ADMIN_URL`.
 
-### Step 3: Deploy Admin Dashboard (Vercel)
-1. Import your `FeastDash` repository as a second project in [Vercel](https://vercel.com).
-2. Set **Root Directory**: `admin`
-3. Set **Framework Preset**: `Vite`
-4. Add Environment Variable:
-   - `VITE_API_URL`: `https://feastdash-api.onrender.com`
-5. Deploy and copy your admin URL (e.g., `https://feastdash-admin.vercel.app`).
+### 2. Customer Frontend (`frontend/`)
+- **Vercel Root Directory:** `frontend`
+- **Framework Preset:** `Vite`
+- **Production URL:** [https://feastdash-app.vercel.app/](https://feastdash-app.vercel.app/)
+- **Environment Variable:** `VITE_API_URL = https://feastdash-backend.vercel.app`
 
-### Step 4: Finalize Production Backend CORS & Stripe Webhook
-1. Update `FRONTEND_URL` and `ADMIN_URL` on Render with your live Vercel domains.
-2. In your [Stripe Dashboard](https://dashboard.stripe.com/test/webhooks), create a webhook endpoint pointing to:
-   `https://feastdash-api.onrender.com/api/order/webhook`
-   Listening for: `checkout.session.completed` and `payment_intent.payment_failed`.
-3. Add the generated `whsec_...` signing secret to your backend `STRIPE_WEBHOOK_SECRET`.
+### 3. Admin Management Dashboard (`admin/`)
+- **Vercel Root Directory:** `admin`
+- **Framework Preset:** `Vite`
+- **Production URL:** [https://feast-dash-livid.vercel.app/](https://feast-dash-livid.vercel.app/)
+- **Environment Variable:** `VITE_API_URL = https://feastdash-backend.vercel.app`
 
 ---
 
 ## 👤 Author & Attribution
 
-- **Developer:** [Karthikeyan](https://github.com/karthikeyantoff) (`karthikeyantoff`)
+- **Lead Developer:** [Karthikeyan](https://github.com/karthikeyantoff) (`karthikeyantoff`)
 - **Original Starter Codebase Attribution:** Based on an open-source project by Maulik Gupta, customized, security-hardened, and extended into FeastDash.
 - **License:** ISC
