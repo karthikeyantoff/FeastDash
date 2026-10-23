@@ -89,6 +89,19 @@ app.get("/api/health", (req, res) => {
     });
 });
 
+// Ensure database is connected for serverless invocations (e.g. Vercel)
+app.use(async (req, res, next) => {
+    try {
+        if (mongoose.connection.readyState !== 1) {
+            await connectDB();
+        }
+        next();
+    } catch (dbErr) {
+        console.error("Serverless DB Connection Error:", dbErr);
+        res.status(500).json({ success: false, message: "Database connection failed" });
+    }
+});
+
 // API Routes
 app.use("/api/food", foodRouter);
 app.use("/api/user", userRouter);
@@ -120,7 +133,7 @@ export const startServer = async () => {
     return server;
 };
 
-if (process.env.NODE_ENV !== "test") {
+if (process.env.NODE_ENV !== "test" && !process.env.VERCEL) {
     startServer();
 }
 
