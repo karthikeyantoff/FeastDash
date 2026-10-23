@@ -207,6 +207,6 @@ All three applications are continuously deployed on **Vercel** via GitHub integr
 
 ## 👤 Author & Attribution
 
-- **Lead Developer:** [Karthikeyan](https://github.com/karthikeyantoff) (`karthikeyantoff`)
+- **Forward Deployed Engineer:** [Karthikeyan](https://github.com/karthikeyantoff) (`karthikeyantoff`)
 - **Original Starter Codebase Attribution:** Based on an open-source project by Maulik Gupta, customized, security-hardened, and extended into FeastDash.
 - **License:** ISC
